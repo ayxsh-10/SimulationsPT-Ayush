@@ -4,44 +4,81 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Command;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class ExampleSubsystem extends SubsystemBase {
-  /** Creates a new ExampleSubsystem. */
-  public ExampleSubsystem() {}
+public class ExampleSubsystem extends SubsystemBase implements Reportable {
+  private final TalonFX motor;
 
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
-  public Command exampleMethodCommand() {
-    // Inline construction of command goes here.
-    // Subsystem::RunOnce implicitly requires `this` subsystem.
-    return runOnce(
-        () -> {
-          /* one-time action goes here */
-        });
+  private double desiredPosition = 0.0;
+  private boolean enabled = true;
+  private MotionMagicVoltage motionMagicVoltage;
+  private final NeutralOut neutralRequest = new NeutralOut();
+
+  public ExampleSubsystem(){
+    motor = new TalonFX(0);
+    motionMagicVoltage = new MotionMagicVoltage(0);
+
+    setMotorConfigs();
+
+    CommandScheduler.getInstance().registerSubsystem(this);
+    //TODO create ligament
+    //TODO create simulation object
   }
 
-  /**
-   * An example method querying a boolean state of the subsystem (for example, a digital sensor).
-   *
-   * @return value of some boolean subsystem state, such as a digital sensor.
-   */
-  public boolean exampleCondition() {
-    // Query some boolean state, such as a digital sensor.
-    return false;
+  public void setMotorConfigs(){
+        TalonFXConfiguration config = new TalonFXConfiguration();
+
+        //TODO motor configs
+        // config.Feedback. // ratios
+        // config.Slot0. // kP, kI, kD
+        // config.MotionMagic. // kP, kI, kD
+        
+        StatusCode statusCode = motor.getConfigurator().apply(config);
+        if (!statusCode.isOK()){
+            DriverStation.reportError("Could not apply motor configs, " + statusCode.getDescription(), true);
+        }
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    if (!enabled) {
+      return;
+    }
+
+    motor.setControl(motionMagicVoltage.withPosition(desiredPosition));
+  }
+
+
+  public void setEnabled(boolean enabled){
+    this.enabled = enabled;
+    if(!enabled){
+      motor.setControl(neutralRequest);
+    } 
+  }
+
+  public void setTargetPosition(double position){
+    desiredPosition = position;
+  }
+
+  public double getPosition(){
+    return motor.getPosition().getValueAsDouble();
+  }
+
+  public double getTargetPosition(){
+    return desiredPosition;
+  }
+
+  public boolean atSpeed(){
+    return getPosition() > getTargetPosition();
   }
 
   @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
-  }
+  public void initShuffleboard(LOG_LEVEL priority) {}
 }
