@@ -5,22 +5,26 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.LEDConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.sims.mechanisms.Mechanator;
+import frc.robot.sims.simulations.ElevatorSimulation;
 
 public class ExampleSubsystem extends SubsystemBase implements Reportable {
   private final TalonFX motor;
 
-  private double desiredPosition = 0.0;
+  private double desiredPosition = 0.67;
   private boolean enabled = true;
   private MotionMagicVoltage motionMagicVoltage;
   private final NeutralOut neutralRequest = new NeutralOut();
-
+  private final ElevatorSimulation esim;
   public ExampleSubsystem(){
     motor = new TalonFX(0);
     motionMagicVoltage = new MotionMagicVoltage(0);
@@ -29,7 +33,9 @@ public class ExampleSubsystem extends SubsystemBase implements Reportable {
 
     CommandScheduler.getInstance().registerSubsystem(this);
     //TODO create ligament
+    MechanismLigament2d ligament = Mechanator.getInstance().getLigament("ayush", 10, 0, 0, 0);
     //TODO create simulation object
+     esim = new ElevatorSimulation(motor, ligament, 10.0, 0.5, 0.05, 0.1, 1,0);
   }
 
   public void setMotorConfigs(){
