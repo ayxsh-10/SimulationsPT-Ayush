@@ -32,19 +32,25 @@ public class ExampleSubsystem extends SubsystemBase implements Reportable {
     setMotorConfigs();
 
     CommandScheduler.getInstance().registerSubsystem(this);
-    //TODO create ligament
-    MechanismLigament2d ligament = Mechanator.getInstance().getLigament("ayush", 10, 0, 0, 0);
-    //TODO create simulation object
+    MechanismLigament2d ligament = Mechanator.getInstance().getLigament("ayush", 1.5, 0.1, 0, 90);
      esim = new ElevatorSimulation(motor, ligament, 10.0, 0.5, 0.05, 0.1, 1,0);
   }
 
   public void setMotorConfigs(){
         TalonFXConfiguration config = new TalonFXConfiguration();
 
-        //TODO motor configs
         // config.Feedback. // ratios
         // config.Slot0. // kP, kI, kD
         // config.MotionMagic. // kP, kI, kD
+        config.Feedback.SensorToMechanismRatio = 1.0;
+        config.Feedback.RotorToSensorRatio = 1.0;
+
+        config.Slot0.kP = 16.0; // kP, kI, kD
+        config.Slot0.kI = 0.0;
+        config.Slot0.kD = 0.0;
+        config.MotionMagic.MotionMagicCruiseVelocity = 150.0;
+        config.MotionMagic.MotionMagicAcceleration = 1500.0;
+        config.MotionMagic.MotionMagicJerk = 15000.0;
         
         StatusCode statusCode = motor.getConfigurator().apply(config);
         if (!statusCode.isOK()){
